@@ -100,7 +100,9 @@ export const setVolume = async (zone: Zone, how: "absolute" | "relative" | "rela
 
   return new Promise((resolve) => {
     for (const output of zone.outputs) {
-      core?.services.RoonApiTransport2.change_volume(output, how, value, resolve);
+      if (output.volume?.type === "number") {
+        core?.services.RoonApiTransport2.change_volume(output, how, value, resolve);
+      }
     }
   });
 };
@@ -110,11 +112,11 @@ export const setVolume = async (zone: Zone, how: "absolute" | "relative" | "rela
  * @param zone
  * @param value
  */
-export const increaseVolume = async (zone: Zone, value = 0.1) => setVolume(zone, "relative_step", value);
+export const increaseVolume = (zone: Zone, value = 1) => setVolume(zone, "relative_step", value);
 
 /**
  * Decreases the volume of all outputs of a zone.
  * @param zone
  * @param value
  */
-export const decreaseVolume = async (zone: Zone, value = 0.1) => setVolume(zone, "relative_step", -value);
+export const decreaseVolume = (zone: Zone, value = 1) => setVolume(zone, "relative_step", -value);

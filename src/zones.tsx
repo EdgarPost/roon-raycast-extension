@@ -2,7 +2,7 @@ import { RoonZoneEventData } from "node-roon-api-transport";
 import { useEffect, useState } from "react";
 import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
 import { connect, image } from "./roon-core";
-import { Zone } from "node-roon-api";
+import { Output, Zone } from "node-roon-api";
 import { control, decreaseVolume, increaseVolume, mute, toggleRadio, toggleShuffle, unmute } from "./roon/zone";
 import { ROON_EVENT } from "./roon/roonEventBus";
 
@@ -82,6 +82,25 @@ const nowPlayingToString = (nowPlaying: NowPlayingSimple): string => {
 
   return `${track} by ${artist} from ${album}`;
 };
+
+const outputToVolumeString = (output: Output): string => {
+  const { volume } = output;
+
+  if (!volume) {
+    return "Fixed";
+  }
+
+  switch (volume.type) {
+    case "number":
+      if (volume.max && volume.value) {
+        return `${(volume.max / 100) * volume.value}%`;
+      }
+  }
+
+  return "N/A";
+};
+
+const supportsVolumeChange = (zone: Zone) => zone.outputs.some((output) => output.volume?.type === "number");
 
 export default function Command() {
   const [searchText, setSearchText] = useState<string>("");
@@ -173,6 +192,7 @@ export default function Command() {
     <List isShowingDetail filtering={false} onSearchTextChange={setSearchText} navigationTitle="Search zones">
       {filteredZones.map((zone) => {
         const nowPlaying = zoneToNowPlaying(zone);
+        const supportsVolume = supportsVolumeChange(zone);
 
         return (
           <List.Item
@@ -198,6 +218,12 @@ export default function Command() {
                             zone.now_playing.length
                           )}`}
                         />
+                        {zone.outputs.map((output) => (
+                          <List.Item.Detail.Metadata.Label
+                            title={output.display_name}
+                            text={`${outputToVolumeString(output)}`}
+                          />
+                        ))}
                         <List.Item.Detail.Metadata.Separator />
                         <List.Item.Detail.Metadata.Label title="Track" text={`${nowPlaying?.track}`} />
                         <List.Item.Detail.Metadata.Label title="Artist" text={`${nowPlaying?.artist}`} />
@@ -235,8 +261,22 @@ export default function Command() {
                 )}
                 <Action title="Stop" icon={Icon.Stop} onAction={() => control(zone, "stop")} />
                 <Action title="Toggle Play / Pause" icon={Icon.Circle} onAction={() => control(zone, "playpause")} />
-                <Action title="Increase Volume" icon={Icon.Circle} onAction={() => increaseVolume(zone)} />
-                <Action title="Decrease Volume" icon={Icon.Circle} onAction={() => decreaseVolume(zone)} />
+                {supportsVolume && (
+                  <>
+                    <Action
+                      title="Increase Volume"
+                      icon={Icon.Circle}
+                      onAction={() => increaseVolume(zone)}
+                      shortcut={{ modifiers: ["cmd"], key: "u" }}
+                    />
+                    <Action
+                      title="Decrease Volume"
+                      icon={Icon.Circle}
+                      onAction={() => decreaseVolume(zone)}
+                      shortcut={{ modifiers: ["cmd"], key: "d" }}
+                    />
+                  </>
+                )}
                 <Action title="Mute" icon={Icon.Circle} onAction={() => mute(zone)} />
                 <Action title="Unmute" icon={Icon.Circle} onAction={() => unmute(zone)} />
                 <Action
