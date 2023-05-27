@@ -1,4 +1,4 @@
-import { ControlAction, Zone } from "node-roon-api";
+import { ControlAction, Output, Zone } from "node-roon-api";
 import { showHUD } from "@raycast/api";
 import { getCore } from "./core";
 
@@ -57,3 +57,64 @@ export const toggleRadio = async (zone: Zone) => {
 
   await showHUD(`Auto radio ${auto_radio ? "turned on" : "turned off"} for zone "${zone.display_name}"`);
 };
+
+/**
+ * Sets the mute state of a zone.
+ *
+ * @param zone
+ * @param how
+ */
+const setMute = async (zone: Zone, how: "mute" | "unmute") => {
+  const core = getCore(true);
+
+  return new Promise((resolve) => {
+    for (const output of zone.outputs) {
+      core?.services.RoonApiTransport2.mute(output, how, resolve);
+    }
+  });
+};
+
+/**
+ * Mutes all outputs of a zone.
+ *
+ * @param zone
+ */
+export const mute = async (zone: Zone) => setMute(zone, "mute");
+
+/**
+ * Unmutes all outputs of a zone.
+ *
+ * @param zone
+ */
+export const unmute = async (zone: Zone) => setMute(zone, "unmute");
+
+/**
+ * Sets the volume of a zone.
+ *
+ * @param zone
+ * @param how
+ * @param value
+ */
+export const setVolume = async (zone: Zone, how: "absolute" | "relative" | "relative_step", value: number) => {
+  const core = getCore(true);
+
+  return new Promise((resolve) => {
+    for (const output of zone.outputs) {
+      core?.services.RoonApiTransport2.change_volume(output, how, value, resolve);
+    }
+  });
+};
+
+/**
+ * Increases the volume of all outputs of a zone.
+ * @param zone
+ * @param value
+ */
+export const increaseVolume = async (zone: Zone, value = 0.1) => setVolume(zone, "relative_step", value);
+
+/**
+ * Decreases the volume of all outputs of a zone.
+ * @param zone
+ * @param value
+ */
+export const decreaseVolume = async (zone: Zone, value = 0.1) => setVolume(zone, "relative_step", -value);

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Action, ActionPanel, List } from "@raycast/api";
 import { connect } from "./roon-core";
+import { getCore } from "./roon/core";
 
 export default function Command() {
   const [searchText, setSearchText] = useState("");
@@ -25,12 +26,11 @@ export default function Command() {
     // filterList(artists.filter((artists) => artists.includes(searchText)));
   }, [searchText]);
 
+  const hierarchy = "browse";
   useEffect(() => {
     async function browse() {
       const { core } = await connect();
       console.log("itemKey >>> ", itemKey);
-
-      const hierarchy = "browse";
 
       core.services.RoonApiBrowse2.browse(
         {
@@ -50,8 +50,9 @@ export default function Command() {
   }, [itemKey]);
 
   useEffect(() => {
+    const core = getCore();
     console.log("LOAD STUFF");
-    core.services.RoonApiBrowse2.load(
+    core?.services.RoonApiBrowse2.load(
       {
         itemKey,
         hierarchy,

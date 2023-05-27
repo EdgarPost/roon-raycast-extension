@@ -3,30 +3,11 @@ import RoonApiTransport, { RoonZoneEventData } from "node-roon-api-transport";
 import RoonApiStatus from "node-roon-api-status";
 import RoonApiImage from "node-roon-api-image";
 import RoonApiBrowse from "node-roon-api-browse";
-import events from "events";
+
 import fs from "fs";
 import path from "path";
 import { getCore, setCore } from "./roon/core";
-
-class RoonEventBus<Commands> {
-  private eventEmitter = new events.EventEmitter();
-
-  emit<T>(event: ROON_EVENT, cmd: Commands, data: T): boolean {
-    return this.eventEmitter.emit(event as unknown as string | symbol, cmd, data as unknown);
-  }
-
-  on<T>(event: ROON_EVENT, listener: (cmd: Commands, data: T) => void) {
-    return this.eventEmitter.on(event as unknown as string | symbol, listener);
-  }
-}
-
-export type RoonZoneCmd = "Subscribed" | "Changed" | "Unsubscribed";
-
-const eventBus = new RoonEventBus<RoonZoneCmd>();
-
-export enum ROON_EVENT {
-  EVENT_ZONES = "roon.transport.zones",
-}
+import { ROON_EVENT, roonEventBus, RoonEventBus, RoonZoneCmd } from "./roon/roonEventBus";
 
 export const image = async (key: string): Promise<string | undefined> => {
   const core = getCore(true);
@@ -51,10 +32,10 @@ type ConnectResult = Promise<{
 }>;
 
 export function connect(): ConnectResult {
-  const core = getCore(true);
+  const core = getCore();
 
   if (core) {
-    return Promise.resolve({ core, eventBus, zones: [] });
+    return Promise.resolve({ core, eventBus: roonEventBus, zones: [] });
   }
 
   return new Promise((resolve) => {
@@ -79,10 +60,10 @@ export function connect(): ConnectResult {
         setCore(core);
 
         core.services.RoonApiTransport2.subscribe_zones<RoonZoneEventData>((cmd, data) => {
-          eventBus.emit<RoonZoneEventData>(ROON_EVENT.EVENT_ZONES, cmd, data);
+          roonEventBus.emit<RoonZoneEventData>(ROON_EVENT.EVENT_ZONES, cmd, data);
         });
 
-        resolve({ core, eventBus, zones: [] });
+        resolve({ core, eventBus: roonEventBus, zones: [] });
       },
 
       core_unpaired: function (core) {

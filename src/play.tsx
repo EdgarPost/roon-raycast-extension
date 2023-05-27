@@ -1,5 +1,6 @@
-import { connect, control } from "./roon-core";
 import { showHUD } from "@raycast/api";
+import { connect } from "./roon-core";
+import { control } from "./roon/zone";
 
 export default async function Command() {
   const { zones } = await connect();

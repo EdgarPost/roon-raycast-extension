@@ -1,8 +1,9 @@
-import { connect, control } from "./roon-core";
+import { connect } from "./roon-core";
+import { control } from "./roon/zone";
 
 export default async function Command() {
   const { zones } = await connect();
 
   const zone = zones[0];
-  await control(zone, "playpause");
+  return control(zone, "playpause");
 }

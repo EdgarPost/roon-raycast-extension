@@ -1,9 +1,10 @@
 import { RoonZoneEventData } from "node-roon-api-transport";
 import { useEffect, useState } from "react";
 import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
-import { connect, image, ROON_EVENT } from "./roon-core";
+import { connect, image } from "./roon-core";
 import { Zone } from "node-roon-api";
-import { control, toggleRadio, toggleShuffle } from "./roon/zone";
+import { control, decreaseVolume, increaseVolume, mute, toggleRadio, toggleShuffle, unmute } from "./roon/zone";
+import { ROON_EVENT } from "./roon/roonEventBus";
 
 function uniqueZones(arr: Array<Zone>) {
   const unique: Record<Zone["zone_id"], boolean> = {};
@@ -19,7 +20,7 @@ function uniqueZones(arr: Array<Zone>) {
 
 function secondsToHms(seconds: number | undefined): string | "N/A" {
   if (!seconds) {
-    return "N/A";
+    return "00:00";
   }
 
   const hours = Math.floor(seconds / 3600);
@@ -156,62 +157,6 @@ export default function Command() {
     }
   }, []);
 
-  // now_playing
-  // seek_position: 251,
-  //     length: 285,
-  //     one_line: { line1: 'Alfahonan (Shooting Blanks) - Gaupa' },
-  // two_line: { line1: 'Alfahonan (Shooting Blanks)', line2: 'Gaupa' },
-  // three_line: {
-  //     line1: 'Alfahonan (Shooting Blanks)',
-  //         line2: 'Gaupa',
-  //         line3: 'Feberdröm'
-  // },
-  // image_key: '06f2351b1909d3253e30b68a30cc799f',
-  //     artist_image_keys: [ 'cf07f0b46595e3cabfe702a206b3c165' ]
-
-  // {
-  //     zone_id: '160140f1d04030e2869916450a44cd64a080',
-  //         display_name: 'Woonkamer',
-  //     outputs: [Array],
-  //     state: 'paused',
-  //     is_next_allowed: true,
-  //     is_previous_allowed: true,
-  //     is_pause_allowed: false,
-  //     is_play_allowed: true,
-  //     is_seek_allowed: true,
-  //     queue_items_remaining: 3,
-  //     z: 675,
-  //     settings: [Object],
-  //     now_playing: [Object]
-  // },
-
-  // { loop: 'disabled', shuffle: false, auto_radio: true }
-
-  // {
-  //     output_id: '170140f1d04030e2869916450a44cd64a080',
-  //         zone_id: '160140f1d04030e2869916450a44cd64a080',
-  //     can_group_with_output_ids: [
-  //     '1701893d4b15ad7e4722b16c322658ca6a7f',
-  //     '170140f1d04030e2869916450a44cd64a080',
-  //     '170104da966338c3077003dc4df2d523f052'
-  // ],
-  //     display_name: 'Woonkamer',
-  //     volume: {
-  //     type: 'number',
-  //         min: 0,
-  //         max: 100,
-  //         value: 12,
-  //         step: 1,
-  //         is_muted: false,
-  //         hard_limit_min: 0,
-  //         hard_limit_max: 100,
-  //         soft_limit: 100
-  // },
-  //     source_controls: [ [Object] ]
-  // }
-
-  // Define markdown here to prevent unwanted indentation.
-
   function stateToIcon(state: Zone["state"]) {
     if (state === "playing") {
       return Icon.Pause;
@@ -273,13 +218,27 @@ export default function Command() {
                   <Action title="Pause" icon={Icon.Pause} onAction={() => control(zone, "pause")} />
                 )}
                 {zone.is_previous_allowed && (
-                  <Action title="Previous Song" icon={Icon.ArrowLeft} onAction={() => control(zone, "previous")} />
+                  <Action
+                    title="Previous Song"
+                    icon={Icon.ArrowLeft}
+                    onAction={() => control(zone, "previous")}
+                    shortcut={{ modifiers: ["cmd"], key: "arrowLeft" }}
+                  />
                 )}
                 {zone.is_next_allowed && (
-                  <Action title="Next Song" icon={Icon.ArrowRight} onAction={() => control(zone, "next")} />
+                  <Action
+                    title="Next Song"
+                    icon={Icon.ArrowRight}
+                    onAction={() => control(zone, "next")}
+                    shortcut={{ modifiers: ["cmd"], key: "arrowRight" }}
+                  />
                 )}
                 <Action title="Stop" icon={Icon.Stop} onAction={() => control(zone, "stop")} />
                 <Action title="Toggle Play / Pause" icon={Icon.Circle} onAction={() => control(zone, "playpause")} />
+                <Action title="Increase Volume" icon={Icon.Circle} onAction={() => increaseVolume(zone)} />
+                <Action title="Decrease Volume" icon={Icon.Circle} onAction={() => decreaseVolume(zone)} />
+                <Action title="Mute" icon={Icon.Circle} onAction={() => mute(zone)} />
+                <Action title="Unmute" icon={Icon.Circle} onAction={() => unmute(zone)} />
                 <Action
                   icon={
                     zone.settings.shuffle
