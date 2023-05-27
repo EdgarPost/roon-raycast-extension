@@ -1,19 +1,27 @@
+import { RoonZoneEventData } from "node-roon-api-transport";
 import { useEffect, useState } from "react";
 import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
-import { connect, control, EVENT_ZONES, image, toggleRadio, toggleShuffle } from "./roon-core";
+import { connect, image, ROON_EVENT } from "./roon-core";
+import { Zone } from "node-roon-api";
+import { control, toggleRadio, toggleShuffle } from "./roon/zone";
 
-function uniqueZones(arr) {
-  const unique = {};
-  return arr.filter((item) => {
-    if (!unique[item.zone_id]) {
-      unique[item.zone_id] = true;
+function uniqueZones(arr: Array<Zone>) {
+  const unique: Record<Zone["zone_id"], boolean> = {};
+
+  return arr.filter((zone) => {
+    if (!unique[zone.zone_id]) {
+      unique[zone.zone_id] = true;
       return true;
     }
     return false;
   });
 }
 
-function secondsToHms(seconds) {
+function secondsToHms(seconds: number | undefined): string | "N/A" {
+  if (!seconds) {
+    return "N/A";
+  }
+
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds - hours * 3600) / 60);
   const remainingSeconds = seconds - hours * 3600 - minutes * 60;
@@ -28,7 +36,9 @@ function secondsToHms(seconds) {
   return timeParts.join(":");
 }
 
-function zoneToNowPlaying(zone) {
+type NowPlayingSimple = { track: string; artist: string; album: string } | null;
+
+function zoneToNowPlaying(zone: Zone): NowPlayingSimple {
   if (!zone.now_playing) {
     return null;
   }
@@ -40,7 +50,7 @@ function zoneToNowPlaying(zone) {
   return { track, artist, album };
 }
 
-async function zoneWithNowPlayingImageSrc(zone) {
+async function zoneWithNowPlayingImageSrc(zone: Zone): Promise<Zone> {
   if (!zone.now_playing) {
     return zone;
   }
@@ -56,13 +66,13 @@ async function zoneWithNowPlayingImageSrc(zone) {
   };
 }
 
-const zonesWithNowPlayingImageSrc = async (zones) => {
+const zonesWithNowPlayingImageSrc = async (zones: Array<Zone>) => {
   const promises = zones.map(await zoneWithNowPlayingImageSrc);
 
   return await Promise.all(promises);
 };
 
-const nowPlayingToString = (nowPlaying) => {
+const nowPlayingToString = (nowPlaying: NowPlayingSimple): string => {
   if (!nowPlaying) {
     return "";
   }
@@ -73,9 +83,9 @@ const nowPlayingToString = (nowPlaying) => {
 };
 
 export default function Command() {
-  const [searchText, setSearchText] = useState("");
-  const [zonesList, setZonesList] = useState([]);
-  const [filteredZones, setFilteredZones] = useState([]);
+  const [searchText, setSearchText] = useState<string>("");
+  const [zonesList, setZonesList] = useState<Array<Zone>>([]);
+  const [filteredZones, setFilteredZones] = useState<Array<Zone>>([]);
 
   useEffect(() => {
     setFilteredZones(
@@ -89,10 +99,12 @@ export default function Command() {
     async function fetchZones() {
       const { eventBus } = await connect();
 
-      eventBus.on(EVENT_ZONES, async (cmd, data) => {
+      eventBus.on<RoonZoneEventData>(ROON_EVENT.EVENT_ZONES, async (cmd, data) => {
         switch (cmd) {
           case "Subscribed":
-            setZonesList(await zonesWithNowPlayingImageSrc(data.zones));
+            if (data.zones) {
+              setZonesList(await zonesWithNowPlayingImageSrc(data.zones));
+            }
             break;
           case "Unsubscribed":
             setZonesList([]);
@@ -109,13 +121,13 @@ export default function Command() {
             }
 
             if (data.zones_removed) {
-              setZonesList((zones) => zones.filter((zone) => !data.zones_removed.includes(zone.zone_id)));
+              setZonesList((zones) => zones.filter((zone) => !data.zones_removed?.includes(zone.zone_id)));
             }
 
             if (data.zones_seek_changed) {
-              setZonesList((zones) =>
-                zones.map((zone) => {
-                  const updatedZone = data.zones_seek_changed.find((z) => z.zone_id === zone.zone_id);
+              setZonesList((zones) => {
+                return zones.map((zone) => {
+                  const updatedZone = data.zones_seek_changed?.find((z) => z.zone_id === zone.zone_id);
 
                   if (updatedZone) {
                     return {
@@ -129,8 +141,8 @@ export default function Command() {
                   }
 
                   return zone;
-                })
-              );
+                });
+              });
             }
             break;
           default:
@@ -200,7 +212,7 @@ export default function Command() {
 
   // Define markdown here to prevent unwanted indentation.
 
-  function stateToIcon(state) {
+  function stateToIcon(state: Zone["state"]) {
     if (state === "playing") {
       return Icon.Pause;
     }
@@ -214,7 +226,7 @@ export default function Command() {
 
   return (
     <List isShowingDetail filtering={false} onSearchTextChange={setSearchText} navigationTitle="Search zones">
-      {filteredZones.map((zone, zoneIndex) => {
+      {filteredZones.map((zone) => {
         const nowPlaying = zoneToNowPlaying(zone);
 
         return (

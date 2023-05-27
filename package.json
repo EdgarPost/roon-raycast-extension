@@ -30,6 +30,12 @@
       "title": "Zones",
       "description": "",
       "mode": "view"
+    },
+    {
+      "name": "browse",
+      "title": "Browse",
+      "description": "",
+      "mode": "view"
     }
   ],
   "dependencies": {
@@ -38,7 +44,8 @@
     "node-roon-api": "github:roonlabs/node-roon-api",
     "node-roon-api-image": "github:roonlabs/node-roon-api-image",
     "node-roon-api-status": "github:roonlabs/node-roon-api-status",
-    "node-roon-api-transport": "github:roonlabs/node-roon-api-transport"
+    "node-roon-api-transport": "github:roonlabs/node-roon-api-transport",
+    "node-roon-api-browse": "github:roonlabs/node-roon-api-browse"
   },
   "devDependencies": {
     "@raycast/eslint-config": "1.0.5",

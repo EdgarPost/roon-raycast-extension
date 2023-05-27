@@ -1,77 +1,60 @@
-import RoonApi from "node-roon-api";
+import RoonApi, { RoonCore, Zone } from "node-roon-api";
+import RoonApiTransport, { RoonZoneEventData } from "node-roon-api-transport";
 import RoonApiStatus from "node-roon-api-status";
-import RoonApiTransport from "node-roon-api-transport";
 import RoonApiImage from "node-roon-api-image";
-import * as fs from "fs";
-import * as path from "path";
-import { showHUD } from "@raycast/api";
-const EventEmitter = require("events");
+import RoonApiBrowse from "node-roon-api-browse";
+import events from "events";
+import fs from "fs";
+import path from "path";
+import { getCore, setCore } from "./roon/core";
 
-let eventBus;
-let coreInstance;
+class RoonEventBus<Commands> {
+  private eventEmitter = new events.EventEmitter();
 
-const checkCore = () => {
-  if (!coreInstance) {
-    throw new Error("Connect to core first!");
+  emit<T>(event: ROON_EVENT, cmd: Commands, data: T): boolean {
+    return this.eventEmitter.emit(event as unknown as string | symbol, cmd, data as unknown);
   }
-};
 
-export const control = async (zone, action) => {
-  checkCore();
+  on<T>(event: ROON_EVENT, listener: (cmd: Commands, data: T) => void) {
+    return this.eventEmitter.on(event as unknown as string | symbol, listener);
+  }
+}
 
-  return new Promise((resolve) => coreInstance.services.RoonApiTransport2.control(zone, action, resolve));
-};
+export type RoonZoneCmd = "Subscribed" | "Changed" | "Unsubscribed";
 
-export const changeSettings = async (zone, newSettings) => {
-  checkCore();
+const eventBus = new RoonEventBus<RoonZoneCmd>();
 
-  return new Promise((resolve) =>
-    coreInstance.services.RoonApiTransport2.change_settings(
-      zone,
-      {
-        ...zone.settings,
-        ...newSettings,
-      },
-      resolve
-    )
-  );
-};
+export enum ROON_EVENT {
+  EVENT_ZONES = "roon.transport.zones",
+}
 
-export const toggleShuffle = async (zone) => {
-  const shuffle = !zone.settings.shuffle;
-  await changeSettings(zone, { shuffle });
-
-  await showHUD(`Shuffle ${shuffle ? "turned on" : "turned off"} for zone "${zone.display_name}"`);
-};
-
-export const toggleRadio = async (zone) => {
-  const auto_radio = !zone.settings.auto_radio;
-  await changeSettings(zone, { auto_radio });
-
-  await showHUD(`Auto radio ${auto_radio ? "turned on" : "turned off"} for zone "${zone.display_name}"`);
-};
-
-export const EVENT_ZONES = "roon.transport.zones";
-
-export const image = async (key) => {
-  checkCore();
+export const image = async (key: string): Promise<string | undefined> => {
+  const core = getCore(true);
 
   return new Promise((resolve) =>
-    coreInstance.services.RoonApiImage2.get_image(
+    core?.services.RoonApiImage2.get_image(
       key,
       {
         scale: "fit",
         width: 200,
         height: 200,
       },
-      (error, contentType, image) => resolve(`data:image/png;base64,${image.toString("base64")}`)
+      (error, contentType, image) => resolve(`data:${contentType};base64,${image.toString("base64")}`)
     )
   );
 };
 
-export function connect() {
-  if (eventBus) {
-    return Promise.resolve(eventBus);
+type ConnectResult = Promise<{
+  core: RoonCore;
+  eventBus: RoonEventBus<RoonZoneCmd>;
+  zones: Zone[];
+}>;
+
+export function connect(): ConnectResult {
+  const core = getCore(true);
+
+  if (core) {
+    return Promise.resolve({ core, eventBus, zones: [] });
   }
 
   return new Promise((resolve) => {
@@ -88,37 +71,33 @@ export function connect() {
       get_persisted_state: () => {
         try {
           return JSON.parse(fs.readFileSync(absolutePath, "utf8"));
-        } catch (e) {}
-
-        return {};
+        } catch (e) {
+          return {};
+        }
       },
       core_paired: function (core) {
-        const transport = core.services.RoonApiTransport2;
+        setCore(core);
 
-        eventBus = new EventEmitter();
-
-        coreInstance = core;
-        transport.subscribe_zones(function (cmd, data) {
-          eventBus.emit(EVENT_ZONES, cmd, data);
+        core.services.RoonApiTransport2.subscribe_zones<RoonZoneEventData>((cmd, data) => {
+          eventBus.emit<RoonZoneEventData>(ROON_EVENT.EVENT_ZONES, cmd, data);
         });
 
-        resolve({ core, eventBus });
+        resolve({ core, eventBus, zones: [] });
       },
 
       core_unpaired: function (core) {
-        eventBus = undefined;
-        console.log(core.core_id, core.display_name, core.display_version, "-", "LOST");
+        // console.log(core.core_id, core.display_name, core.display_version, "-", "LOST");
       },
     });
 
-    // setInterval(() => {
+    // setInterval(() => {/*
     //   svc_status.set_status(new Date(), false);
-    // }, 1000);
+    // }, 1000);*/
 
     const svc_status = new RoonApiStatus(roon);
 
     roon.init_services({
-      required_services: [RoonApiTransport, RoonApiImage],
+      required_services: [RoonApiTransport, RoonApiImage, RoonApiBrowse],
       provided_services: [svc_status],
     });
 
