@@ -1,13 +1,36 @@
-import { showHUD } from "@raycast/api";
+import { showHUD, showToast, Toast } from "@raycast/api";
 import { connect } from "./roon-core";
 import { control } from "./roon/zone";
+import { ZonePersistenceService } from "./services/zonePersistence";
 
+/**
+ * Pause playback on the last-used zone.
+ */
 export default async function Command() {
-  const { zones } = await connect();
+  try {
+    const { zones } = await connect();
 
-  const zone = zones[2];
+    if (zones.length === 0) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "No Zones Available",
+        message: "No Roon zones found",
+      });
+      return;
+    }
 
-  await control(zone, "pause");
+    // Get last-used zone for this command
+    const lastZoneId = await ZonePersistenceService.getLastZone("pause");
+    const zone = zones.find((z) => z.zone_id === lastZoneId) || zones[0];
 
-  await showHUD(`Paused playback on ${zone.display_name}`);
+    await control(zone, "pause");
+    await ZonePersistenceService.setLastZone("pause", zone.zone_id);
+    await showHUD(`⏸️ Paused playback on ${zone.display_name}`);
+  } catch (error) {
+    await showToast({
+      style: Toast.Style.Failure,
+      title: "Failed to Pause",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 }
