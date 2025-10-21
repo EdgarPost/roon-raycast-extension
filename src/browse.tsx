@@ -3,14 +3,19 @@ import { Action, ActionPanel, List } from "@raycast/api";
 import { connect } from "./roon-core";
 import { getCore } from "./roon/core";
 
+interface BrowseItem {
+  item_key: string;
+  title: string;
+  subtitle?: string;
+}
+
 export default function Command() {
   const [searchText, setSearchText] = useState("");
-  // const [filteredList, filterList] = useState([]);
-  const [items, setItems] = useState([]);
-  const [itemKey, setItemKey] = useState(undefined);
+  const [items, setItems] = useState<BrowseItem[]>([]);
+  const [itemKey, setItemKey] = useState<string | undefined>(undefined);
   const [level, setLevel] = useState(0);
 
-  const gotoItem = (itemKey) => {
+  const gotoItem = (itemKey: string) => {
     setItemKey(itemKey);
     setLevel((level) => level + 1);
   };
@@ -20,7 +25,7 @@ export default function Command() {
       itemKey,
       level,
     };
-  });
+  }, [itemKey, level]);
 
   useEffect(() => {
     // filterList(artists.filter((artists) => artists.includes(searchText)));
@@ -38,7 +43,7 @@ export default function Command() {
           hierarchy,
           // pop_all: true,
         },
-        (error, body) => {
+        (error: Error | false, body: unknown) => {
           setLevel((level) => level + 1);
         }
       );
@@ -57,8 +62,9 @@ export default function Command() {
         itemKey,
         hierarchy,
       },
-      (error, items) => {
-        setItems(items.items);
+      (error: Error | false, body: unknown) => {
+        const data = body as { items: BrowseItem[] };
+        setItems(data.items || []);
       }
     );
   }, [req]);

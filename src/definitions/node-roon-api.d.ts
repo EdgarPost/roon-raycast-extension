@@ -1,6 +1,7 @@
 declare module "node-roon-api" {
   import RoonApiTransport from "node-roon-api-transport";
   import RoonApiImage from "node-roon-api-image";
+  import RoonApiBrowse from "node-roon-api-browse";
 
   export type Zone = {
     zone_id: string;
@@ -109,6 +110,7 @@ declare module "node-roon-api" {
     services: {
       RoonApiTransport2: RoonApiTransport;
       RoonApiImage2: RoonApiImage;
+      RoonApiBrowse2: RoonApiBrowse;
     };
   };
 
