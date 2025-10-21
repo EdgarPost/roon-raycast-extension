@@ -2,10 +2,20 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "roon",
   "title": "Roon",
-  "description": "",
+  "description": "Control your Roon music system from Raycast. Play, pause, skip tracks, browse your library, and manage multiple zones.",
   "icon": "command-icon.png",
   "author": "EdgarPost",
   "license": "MIT",
+  "keywords": [
+    "roon",
+    "music",
+    "audio",
+    "player",
+    "control",
+    "zones",
+    "library",
+    "streaming"
+  ],
   "commands": [
     {
       "name": "toggle-play",
