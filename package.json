@@ -10,31 +10,67 @@
     {
       "name": "toggle-play",
       "title": "Toggle Play",
-      "description": "",
+      "description": "Toggle play/pause on the last-used zone",
       "mode": "no-view"
     },
     {
       "name": "play",
       "title": "Play",
-      "description": "",
+      "description": "Start playback on the last-used zone",
       "mode": "no-view"
     },
     {
       "name": "pause",
       "title": "Pause",
-      "description": "",
+      "description": "Pause playback on the last-used zone",
+      "mode": "no-view"
+    },
+    {
+      "name": "next-track",
+      "title": "Next Track",
+      "description": "Skip to the next track",
+      "mode": "no-view"
+    },
+    {
+      "name": "previous-track",
+      "title": "Previous Track",
+      "description": "Go back to the previous track",
+      "mode": "no-view"
+    },
+    {
+      "name": "stop",
+      "title": "Stop",
+      "description": "Stop playback on the last-used zone",
+      "mode": "no-view"
+    },
+    {
+      "name": "pause-all",
+      "title": "Pause All Zones",
+      "description": "Pause playback on all zones",
+      "mode": "no-view"
+    },
+    {
+      "name": "toggle-loop",
+      "title": "Toggle Loop",
+      "description": "Cycle through loop modes (off, all, one)",
+      "mode": "no-view"
+    },
+    {
+      "name": "toggle-radio",
+      "title": "Toggle Radio",
+      "description": "Toggle auto-radio setting",
       "mode": "no-view"
     },
     {
       "name": "zones",
       "title": "Zones",
-      "description": "",
+      "description": "View and control all Roon zones",
       "mode": "view"
     },
     {
       "name": "browse",
       "title": "Browse",
-      "description": "",
+      "description": "Browse your Roon library",
       "mode": "view"
     }
   ],
