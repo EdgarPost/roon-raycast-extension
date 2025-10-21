@@ -19,7 +19,7 @@ declare module "node-roon-api-transport" {
       output: Output,
       how: "absolute" | "relative" | "relative_step",
       value: number,
-      callback?: RoonCallback
+      callback?: RoonCallback,
     ): void;
     control: (zone: Zone | Output, control: ControlAction, callback?: RoonCallback) => void;
     convenience_switch: (
@@ -27,7 +27,7 @@ declare module "node-roon-api-transport" {
       options: {
         control_key?: string;
       },
-      callback?: RoonCallback
+      callback?: RoonCallback,
     ) => void;
     group_outputs: (outputs: Output[], callback?: RoonCallback) => void;
     mute: (output: Output, how: "mute" | "unmute", callback?: RoonCallback) => void;
@@ -39,7 +39,7 @@ declare module "node-roon-api-transport" {
       options: {
         control_key?: string;
       },
-      callback?: RoonCallback
+      callback?: RoonCallback,
     ) => void;
     toggle_standby: (output: Output, options: { control_key?: string }, callback?: RoonCallback) => void;
     transfer_zone: (from: Zone | Output, to: Zone | Output, callback?: RoonCallback) => void;

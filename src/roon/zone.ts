@@ -1,4 +1,4 @@
-import { ControlAction, Output, Zone } from "node-roon-api";
+import { ControlAction, Zone } from "node-roon-api";
 import { showHUD } from "@raycast/api";
 import { getCore } from "./core";
 
@@ -29,8 +29,8 @@ export const changeSettings = async (zone: Zone, newSettings: Partial<Zone["sett
         ...zone.settings,
         ...newSettings,
       },
-      resolve
-    )
+      resolve,
+    ),
   );
 };
 

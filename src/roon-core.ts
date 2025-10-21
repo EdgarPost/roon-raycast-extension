@@ -20,8 +20,8 @@ export const image = async (key: string): Promise<string | undefined> => {
         width: 200,
         height: 200,
       },
-      (error, contentType, image) => resolve(`data:${contentType};base64,${image.toString("base64")}`)
-    )
+      (error, contentType, image) => resolve(`data:${contentType};base64,${image.toString("base64")}`),
+    ),
   );
 };
 
@@ -66,7 +66,7 @@ export function connect(): ConnectResult {
         resolve({ core, eventBus: roonEventBus, zones: [] });
       },
 
-      core_unpaired: function (core) {
+      core_unpaired: function (_core) {
         // console.log(core.core_id, core.display_name, core.display_version, "-", "LOST");
       },
     });

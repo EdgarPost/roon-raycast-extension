@@ -1,4 +1,4 @@
-import { showHUD, showToast, Toast } from "@raycast/api";
+import { showToast, Toast } from "@raycast/api";
 import { connect } from "./roon-core";
 import { toggleRadio } from "./roon/zone";
 import { ZonePersistenceService } from "./services/zonePersistence";

@@ -43,9 +43,9 @@ export default function Command() {
           hierarchy,
           // pop_all: true,
         },
-        (error: Error | false, body: unknown) => {
+        (_error: Error | false, _body: unknown) => {
           setLevel((level) => level + 1);
-        }
+        },
       );
 
       console.log(core);
@@ -65,7 +65,7 @@ export default function Command() {
       (error: Error | false, body: unknown) => {
         const data = body as { items: BrowseItem[] };
         setItems(data.items || []);
-      }
+      },
     );
   }, [req]);
 

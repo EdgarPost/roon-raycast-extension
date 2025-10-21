@@ -73,15 +73,16 @@ const zonesWithNowPlayingImageSrc = async (zones: Array<Zone>) => {
   return await Promise.all(promises);
 };
 
-const nowPlayingToString = (nowPlaying: NowPlayingSimple): string => {
-  if (!nowPlaying) {
-    return "";
-  }
-
-  const { track, artist, album } = nowPlaying;
-
-  return `${track} by ${artist} from ${album}`;
-};
+// Utility function for future use
+// const nowPlayingToString = (nowPlaying: NowPlayingSimple): string => {
+//   if (!nowPlaying) {
+//     return "";
+//   }
+//
+//   const { track, artist, album } = nowPlaying;
+//
+//   return `${track} by ${artist} from ${album}`;
+// };
 
 const outputToVolumeString = (output: Output): string => {
   const { volume } = output;
@@ -111,7 +112,7 @@ export default function Command() {
     setFilteredZones(
       zonesList
         .filter((zone) => zone.display_name.toLowerCase().includes(searchText.toLowerCase()))
-        .sort((a, b) => a.display_name.localeCompare(b.display_name))
+        .sort((a, b) => a.display_name.localeCompare(b.display_name)),
     );
   }, [searchText, zonesList]);
 
@@ -215,7 +216,7 @@ export default function Command() {
                         <List.Item.Detail.Metadata.Label
                           title="Playtime"
                           text={`${secondsToHms(zone.now_playing.seek_position)} / ${secondsToHms(
-                            zone.now_playing.length
+                            zone.now_playing.length,
                           )}`}
                         />
                         {zone.outputs.map((output) => (

@@ -25,8 +25,7 @@ export default async function Command() {
 
     // Cycle through loop modes
     const currentLoop = zone.settings.loop;
-    const nextLoop =
-      currentLoop === "disabled" ? "loop" : currentLoop === "loop" ? "loop_one" : "disabled";
+    const nextLoop = currentLoop === "disabled" ? "loop" : currentLoop === "loop" ? "loop_one" : "disabled";
 
     await changeSettings(zone, { loop: nextLoop });
     await ZonePersistenceService.setLastZone("toggle-loop", zone.zone_id);
