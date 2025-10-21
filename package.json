@@ -62,6 +62,30 @@
       "mode": "no-view"
     },
     {
+      "name": "seek-forward",
+      "title": "Seek Forward",
+      "description": "Skip forward by configured seconds",
+      "mode": "no-view"
+    },
+    {
+      "name": "seek-backward",
+      "title": "Seek Backward",
+      "description": "Skip backward by configured seconds",
+      "mode": "no-view"
+    },
+    {
+      "name": "mute-all",
+      "title": "Mute All",
+      "description": "Mute all zones",
+      "mode": "no-view"
+    },
+    {
+      "name": "unmute-all",
+      "title": "Unmute All",
+      "description": "Unmute all zones",
+      "mode": "no-view"
+    },
+    {
       "name": "zones",
       "title": "Zones",
       "description": "View and control all Roon zones",
