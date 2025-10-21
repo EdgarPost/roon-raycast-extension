@@ -6,4 +6,9 @@ export default defineConfig({
     environment: "node",
     setupFiles: ["./src/__tests__/setup.ts"],
   },
+  resolve: {
+    alias: {
+      "@raycast/api": new URL("./src/__mocks__/@raycast/api.ts", import.meta.url).pathname,
+    },
+  },
 });
