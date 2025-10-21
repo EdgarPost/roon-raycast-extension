@@ -35,7 +35,7 @@ export default function Command() {
   useEffect(() => {
     async function browse() {
       const { core } = await connect();
-      console.log("itemKey >>> ", itemKey);
+      
 
       core.services.RoonApiBrowse2.browse(
         {
@@ -48,7 +48,7 @@ export default function Command() {
         },
       );
 
-      console.log(core);
+      
     }
 
     browse();
@@ -56,7 +56,7 @@ export default function Command() {
 
   useEffect(() => {
     const core = getCore();
-    console.log("LOAD STUFF");
+    
     core?.services.RoonApiBrowse2.load(
       {
         itemKey,
@@ -73,8 +73,8 @@ export default function Command() {
     <List
       filtering={false}
       onSearchTextChange={setSearchText}
-      navigationTitle="Search Beers"
-      searchBarPlaceholder="Search your favorite artist"
+      navigationTitle="Browse Library"
+      searchBarPlaceholder="Search library..."
     >
       {items.map((item) => (
         <List.Item
